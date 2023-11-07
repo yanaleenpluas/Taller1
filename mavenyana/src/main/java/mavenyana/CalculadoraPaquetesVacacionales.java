@@ -1,12 +1,17 @@
 package mavenyana;
 
 import java.util.Scanner;
-//CHECKSTYLE:OFF
+import java.util.Locale;
+import java.util.logging.Logger;
 
+
+//CHECKSTYLE:OFF
+//Classs 
 public final class CalculadoraPaquetesVacacionales {
-/**.
-*Representation Costo base
-*/
+    private static final Logger LOGGER = Logger.getLogger(CalculadoraPaquetesVacacionales.class.getName());
+    /**.
+    *Representation Costo base
+    */
     private static final int COSTO_BASE = 1000;
     /**.
     *Costo asicional Paris
@@ -19,11 +24,11 @@ public final class CalculadoraPaquetesVacacionales {
     /**.
      *Costo adicional base
      */
-    private static  int costoAdicional = 0;
+    private static  int costoAdicional;
     /**.
      *Costo total inicial
      */
-    private static  int costoTotal = 0;
+    private static  int costoTotal;
     /**.
      Numero de viajeros minimo
      */
@@ -60,54 +65,105 @@ public final class CalculadoraPaquetesVacacionales {
      *Descuento maximo
      */
     private static final double  DISCONTMAX = 0.20;
-
+    /**.
+     *Descuento maximo
+     */
+    private static final double ALL_INCLUSIVE_PAC = 200.0;
+    /**.
+     *Descuento maximo
+     */
+    private static final double ADVENTURE_PACKAGE = 150.0;
+    /**.
+     *Descuento maximo
+     */
+    private static final double SPA_PACKAGE = 100.0;
     /**.
      *Metodo main
      *@param args not used
      */
     public static void main(final String[] args) {
+        final Scanner scanner1  = new Scanner(System.in);
+        LOGGER.info("Ingrese el destino de las vacaciones");
+        final String destino = scanner1.nextLine().toLowerCase(Locale.ENGLISH);
+        LOGGER.info("Ingrese el número de viajeros: ");
+        final int numeroViajeros = scanner1.nextInt();
+        LOGGER.info("Ingrese la duración de las vacaciones en días: ");
+        final int duraticonVacat = scanner1.nextInt();
 
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Ingrese el destino de las vacaciones: ");
-        String destino = sc.nextLine().toLowerCase();
-        System.out.print("Ingrese el número de viajeros: ");
-        int numeroViajeros = sc.nextInt();
-        System.out.print("Ingrese la duración de las vacaciones en días: ");
-        int duracionVacaciones = sc.nextInt();
-        sc.close();
+        final double addOnsCost = calculateAdditioPackagesCost(scanner1);
+        scanner1.close();
+        final String newyork = "nueva york";
+        final String paris = "parís";
 
-        //Cost Adicional Destino
-        if (destino.equals("parís")) {
-        	costoAdicional = COST_PARIS;
-        } else if (destino.equals("nueva york")) {
-        	costoAdicional = COST_NEWYORK;
+        if (paris.equals(destino)) {
+            costoAdicional = COST_PARIS;
+        } else if (newyork.equals(destino)) {
+            costoAdicional = COST_NEWYORK;
         }
         costoTotal = COSTO_BASE + costoAdicional;
-        boolean condition1 = numeroViajeros > NUMTRAVELERMIN;
-        boolean condition2 = numeroViajeros <= NUMTRAVELERMAX;
-        //Descruento Viajeros
-        if (condition1 && condition2) {
-        	costoTotal -= (int) (costoTotal * DISCONTNIM);
+        final boolean bool1 = numeroViajeros > NUMTRAVELERMIN;
+        final boolean bool2 = numeroViajeros <= NUMTRAVELERMAX;
+
+        if (bool1 && bool2) {
+            costoTotal -= (int) (costoTotal * DISCONTNIM);
         } else if (numeroViajeros > NUMTRAVELERMAX) {
-        	costoTotal -= (int) (costoTotal * DISCONTMAX);
+            costoTotal -= (int) (costoTotal * DISCONTMAX);
         }
-        //Multa duraccion & descuento promocion
-        if (duracionVacaciones < DAYSMIN) {
-        	costoTotal  += MULTA;
-        } else if (duracionVacaciones > DAYSMAX || numeroViajeros == 2) {
-        	costoTotal -= PROMOTION;
+
+        if (duraticonVacat < DAYSMIN) {
+            costoTotal += MULTA;
+        } else if (duraticonVacat > DAYSMAX || numeroViajeros == 2) {
+            costoTotal -= PROMOTION;
         }
+
+        costoTotal += addOnsCost;
 
         if (numeroViajeros > EXCESOTRAVELER) {
-            System.out.println("El paquete no está disponible.");
-            System.out.println("para grupo mayores a 80 personas.");
-
+            LOGGER.info("El paquete no disponible grupos mayores a 80 pers.");
             costoTotal = -1;
         } else {
-            System.out.println("El costo total es: $" + costoTotal);
+            LOGGER.info("El costo total es: $" + costoTotal);
         }
     }
-  //CHECKSTYLE:ON
 
+    private static double calculateAdditioPackagesCost(final Scanner scanner) {
+        double additionalCost = 0;
+        LOGGER.info("Seleccione los add-ons para su paquete de vacaciones:");
+        LOGGER.info("1. All-Inclusive Package - $200 por viajero");
+        LOGGER.info("2. Adventure Activities Package - $150 por viajero");
+        LOGGER.info("3. Spa and Wellness Package - $100 por viajero");
+        LOGGER.info("Ingrese el # del add-on incluira(o 0 para finalizar):");
+        while (true) {
+            final int selectedPackage = getValidQuantity(scanner.nextLine());
+            switch (selectedPackage) {
+                case 1:
+                    additionalCost += ALL_INCLUSIVE_PAC;
+                    break;
+                case 2:
+                    additionalCost += ADVENTURE_PACKAGE;
+                    break;
+                case 3:
+                    additionalCost += SPA_PACKAGE;
+                    break;
+                case 0:
+                    return additionalCost;
+                default:
+                    LOGGER.info("#de add-on invalido");
+                    LOGGER.info("Seleccione un add-on válido o 0 para fin.");
+                    break;
+            }
+        }
+    }
+
+    private static int getValidQuantity(final String input) {
+        try {
+            final int quantity = Integer.parseInt(input);
+            return quantity >= 0 ? quantity : -1;
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
 }
 
+
+//CHECKSTYLE:ON
